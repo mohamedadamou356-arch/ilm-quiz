@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ilm Quiz</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0c2f26">
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#eef6f2;--card:#fff;--ink:#16163a;--mut:#6a6d8c;--acc:#ffb800;--accink:#16163a;--ok:#1f9d63;--bad:#d93f4c;--line:#dcdfee;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c2f26;--card:#14463a;--ink:#f2f2ff;--mut:#9cc9b8;--line:#1f6654}}
+:root[data-theme="dark"]{--bg:#0c2f26;--card:#14463a;--ink:#f2f2ff;--mut:#9cc9b8;--line:#1f6654}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;min-height:100vh}
+main{max-width:480px;margin:0 auto;padding:18px 16px 96px}
+h1{font-size:2rem;line-height:1.1;margin:8px 0 6px;font-weight:800}
+p{line-height:1.5;margin:6px 0}
+.mut{color:var(--mut);font-size:.92rem}
+.wallet{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px 16px;margin-bottom:14px}
+.wallet b{font-size:1.4rem}
+.demo{font-size:.8rem;background:var(--acc);color:var(--accink);padding:3px 10px;border-radius:99px;font-weight:700}
+button{font:inherit;cursor:pointer;border:0;border-radius:14px;padding:15px 16px;width:100%;font-weight:700;font-size:1.05rem}
+.main{background:var(--acc);color:var(--accink)}
+.alt{background:transparent;color:var(--ink);border:2px solid var(--line);margin-top:10px}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+button:disabled{opacity:.45}
+.rules{background:var(--card);border-radius:16px;padding:6px 16px;margin:14px 0;border:2px solid var(--line)}
+.rules p{padding:8px 0;border-bottom:1px solid var(--line);margin:0}
+.rules p:last-child{border:0}
+.bar{height:10px;background:var(--line);border-radius:9px;overflow:hidden;margin:6px 0 14px}
+.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .3s}
+.top{display:flex;justify-content:space-between;font-weight:700}
+.timer{height:6px;background:var(--line);border-radius:9px;overflow:hidden;margin-bottom:18px}
+.timer i{display:block;height:100%;background:var(--ink);width:100%}
+.q{font-size:1.35rem;font-weight:700;line-height:1.3;margin:0 0 18px;min-height:5.2rem}
+.opt{background:var(--card);color:var(--ink);border:2px solid var(--line);text-align:left;margin-bottom:10px}
+.opt.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.big{font-size:3.4rem;margin:20px 0 0;text-align:center}
+.center{text-align:center}
+input,select{font:inherit;width:100%;padding:14px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);margin:6px 0 10px}
+.hide{display:none}
+#tabs.hide{display:none}
+#tabs{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:2px solid var(--line);z-index:5}
+#tabs button{padding:12px;background:transparent;color:var(--ink);border:2px solid var(--line)}
+#tabs button.on{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+#quran{--qbg:var(--card);--qink:var(--ink)}#quran.day{--qbg:#fff;--qink:#111}#quran.night{--qbg:#0b0b0b;--qink:#f3f3f3}
+.qbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.qbar button{width:46px;padding:10px 0;background:var(--card);color:var(--ink);border:2px solid var(--line);font-size:1.15rem}
+.qtitle{flex:1;text-align:center;font-weight:700;font-size:.95rem}
+.qbody{background:var(--qbg);color:var(--qink);border-radius:16px;padding:16px 12px;min-height:240px;border:2px solid var(--line)}
+.ar{direction:rtl;font-family:"Amiri Quran","Scheherazade New","Traditional Arabic",serif;line-height:2.2;text-align:center;font-size:var(--fs,30px);margin:6px 0}
+.tr{font-size:.95rem;line-height:1.5;opacity:.85;margin:0 0 10px}
+.ab{border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:6px}
+.ay{cursor:pointer}.ay.bm{background:rgba(255,184,0,.25);border-radius:8px}
+.num{color:#b8860b;font-size:.7em}.nonum .num{display:none}
+.qnav{display:flex;gap:10px;margin-top:12px}.qnav button{margin:0}
+.panel{position:fixed;inset:0;background:var(--bg);z-index:10;overflow:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 24px;max-width:480px;margin:0 auto}
+.hero{text-align:center;margin:2px 0 8px}.hero svg{width:190px;max-width:62%;height:auto}
+html[dir=rtl] .opt{text-align:right}
+select.ls{margin:0 0 12px}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{background:var(--card);color:var(--ink);border:2px solid var(--line);padding:11px 8px;font-size:.95rem}
+.tab.on{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.tx{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+.tx:last-child{border:0}
+.pos{color:var(--ok);font-weight:700}
+.neg{color:var(--bad);font-weight:700}
+
+.feat{background:linear-gradient(135deg,#1f8a6a,#0f5d4a);color:#fff;border-radius:22px;padding:18px;margin:10px 0 14px}
+.feat h2{margin:4px 0 10px;font-size:1.5rem}.feat small{display:block;opacity:.8}.feat b{font-size:1.2rem}
+.frow{display:flex;justify-content:space-between;background:rgba(255,255,255,.14);border-radius:14px;padding:10px 14px;margin-bottom:10px}
+.white{background:#fff;color:#0f5d4a}
+.htop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.chip{background:var(--card);border:2px solid var(--line);border-radius:99px;padding:5px 12px;font-weight:700;font-size:.9rem}
+.avatar{width:84px;height:84px;border-radius:50%;background:var(--acc);color:var(--accink);display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:6px auto}
+.plan{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px 16px;margin-bottom:10px}
+.plan.cur{border-color:var(--acc)}.plan p{margin:2px 0 10px}
+.codebox{display:flex;gap:10px;align-items:center;background:var(--card);border:2px dashed var(--acc);border-radius:14px;padding:10px 14px}
+.codebox b{flex:1;font-size:1.3rem;letter-spacing:2px}.codebox button{width:auto;padding:10px 14px;margin:0}
+.err{color:var(--bad)}
+#updbar{position:fixed;top:0;left:0;right:0;background:var(--acc);color:var(--accink);padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;display:flex;gap:10px;align-items:center;justify-content:space-between;z-index:20;font-weight:700}
+#updbar.hide{display:none}#updbar button{width:auto;padding:8px 14px;background:var(--accink);color:#fff;margin:0}
+.avgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.avgrid button{font-size:2rem;padding:12px 0;background:var(--card);border:2px solid var(--line)}.avgrid button.on{border-color:var(--acc);background:var(--acc)}
+.lvls{display:flex;gap:6px;margin:12px 0 2px}.lvls button{padding:9px 4px;font-size:.85rem;background:var(--card);color:var(--ink);border:2px solid var(--line)}.lvls button.on{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+</style>
+</head>
+<body>
+<main>
+<section id="reg" class="hide">
+<div class="hero"><svg viewBox="0 0 200 132" role="img" aria-label="Coran"><path d="M70 122L130 88M130 122L70 88" stroke="#b8860b" stroke-width="6" stroke-linecap="round"/><path d="M28 44Q64 32 100 48V94Q64 80 28 90Z" fill="#faecbe" stroke="#ffb800" stroke-width="2"/><path d="M172 44Q136 32 100 48V94Q136 80 172 90Z" fill="#faecbe" stroke="#ffb800" stroke-width="2"/><path d="M40 58Q64 52 90 62M40 68Q64 62 90 72M40 78Q64 72 90 82M160 58Q136 52 110 62M160 68Q136 62 110 72M160 78Q136 72 110 82" stroke="#0c2f26" stroke-width="2" fill="none" stroke-linecap="round"/><mask id="cm"><rect width="200" height="132" fill="#fff"/><circle cx="107" cy="16" r="10" fill="#000"/></mask><circle cx="98" cy="18" r="13" fill="#ffb800" mask="url(#cm)"/><circle cx="118" cy="13" r="2.5" fill="#ffb800"/></svg><h1 data-i="welcome">Bienvenue</h1><p data-i="sub">Crée ton compte pour jouer à Ilm Quiz.</p></div>
+<label><span data-i="lang">Langue des questions</span>
+<select id="lsel" class="ls"><option value="fr">Français</option><option value="en">English</option><option value="ar">العربية</option><option value="ha">Hausa</option><option value="sw" disabled>Kiswahili (bientôt)</option><option value="dje" disabled>Zarma (bientôt)</option><option value="ff" disabled>Fulfulde (bientôt)</option><option value="tr" disabled>Türkçe (bientôt)</option><option value="id" disabled>Bahasa Indonesia (bientôt)</option><option value="ur" disabled>اردو (bientôt)</option></select></label>
+<label><span data-i="phone">Numéro de téléphone</span>
+<input id="rtel" type="tel" inputmode="tel" placeholder="Ex. 90 00 00 00"></label>
+<input id="rinv" placeholder="Code d’invitation (facultatif)" autocapitalize="characters">
+<p class="mut" data-i="testnote"></p>
+<p class="mut err" id="rerr"></p>
+<div id="otpbox" class="hide">
+<p class="mut" id="otpmsg"></p>
+<label><span data-i="code">Code à 6 chiffres</span>
+<input id="rcode" type="text" inputmode="numeric" maxlength="6" placeholder="000000"></label>
+<button class="main" id="rok" data-i="ok">Valider le code</button>
+<button class="alt" id="rre" data-i="resend">Renvoyer le code</button>
+</div>
+<button class="main" id="rgo" data-i="getcode">Recevoir le code par SMS</button>
+<p class="mut center" style="margin-top:14px">Version 11.0.0 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
+</section>
+
+<section id="setup" class="hide">
+<h1 data-i="chooseP">Choisis ton profil</h1>
+<div class="avgrid" id="avgrid"></div>
+<input id="nick" maxlength="16" placeholder="Ton pseudo">
+<p class="mut err" id="nerr"></p>
+<button class="main" id="setok" data-i="cont">Continuer</button>
+</section>
+
+<section id="home" class="hide">
+<div class="htop"><div><div class="mut" data-i="welcome">Bienvenue</div><b id="hphone"></b></div><div class="chips"><span class="chip" id="hpts"></span><span class="chip" id="hplan"></span></div></div>
+<div class="lvls" id="lvls"></div>
+<div class="feat"><div>🏆 <span data-i="featured">Quiz du jour</span></div><h2 data-i="qtitle">Culture islamique</h2>
+<div class="frow"><span><small data-i="cost">Coût</small><b id="hcost"></b></span><span><small data-i="reward">Gains maximum</small><b id="hrew"></b></span></div>
+<p id="hleft" style="margin:0 0 12px"></p>
+<button class="main white" id="play" data-i="playnow">Jouer maintenant</button></div>
+<p class="mut err" id="hmsg"></p>
+</section>
+
+<section id="game" class="hide">
+<div class="top"><span id="num">Question 1/20</span><span id="tm">33 s</span></div>
+<div class="bar"><i id="prog"></i></div>
+<div class="timer"><i id="tbar"></i></div>
+<p class="q" id="q"></p>
+<div id="opts"></div>
+</section>
+
+<section id="end" class="hide center">
+<div class="big" id="emo"></div>
+<h1 id="etitle"></h1>
+<p id="emsg"></p>
+<button class="main" id="again" style="margin-top:16px"></button>
+<button class="alt" id="egh" data-i="gohome">Accueil</button>
+</section>
+
+<section id="board" class="hide">
+<h1 data-i="boardT">Classement</h1>
+<div class="rules" id="lb"></div>
+<p class="mut" style="font-size:.85rem" data-i="boardnote"></p>
+</section>
+
+<section id="quran" class="hide">
+<div class="qbar"><button id="qmenu" aria-label="Menu">☰</button><div id="qt" class="qtitle">…</div><button id="qsearch" aria-label="Search">🔍</button><button id="qgear" aria-label="Settings">⚙</button></div>
+<div id="qbody" class="qbody"></div>
+<div class="qnav"><button id="qprev" class="alt" data-i="prev">← Précédente</button><button id="qnext" class="alt" data-i="next">Suivante →</button></div>
+<div id="qlist" class="panel hide"><button class="alt" id="qlclose" data-i="close">Fermer</button>
+<input id="qfilter" placeholder="Rechercher une sourate" style="margin-top:12px">
+<h3 data-i="bms">Signets</h3><div id="qbm"></div><div id="qsl"></div></div>
+<div id="qset" class="panel hide"><button class="alt" id="qsclose" data-i="close">Fermer</button><h2 data-i="setT">Réglages</h2>
+<label><span data-i="fsz">Taille du texte</span><input id="fsz" type="range" min="20" max="52" step="2" value="30"></label>
+<label><span data-i="thm">Thème</span><select id="qtheme"><option value="auto" data-i="auto">Auto</option><option value="day" data-i="day">Jour</option><option value="night" data-i="night">Nuit</option></select></label>
+<label><span data-i="trl">Traduction</span><select id="qtr"></select></label>
+<label style="display:flex;gap:10px;align-items:center"><input id="qnum" type="checkbox" style="width:auto;margin:0" checked><span data-i="nums">Numéros des versets</span></label>
+<p class="mut" style="font-size:.8rem;margin-top:16px">Source du texte : Al Quran Cloud (quran-uthmani).</p></div>
+</section>
+
+<section id="prof" class="hide">
+<div class="avatar" id="pav">👤</div>
+<h2 id="pph" class="center" style="margin:4px 0"></h2>
+<p class="center"><span class="chip" id="pplan2"></span> <span class="chip" id="ppts"></span></p>
+<button class="alt" id="pedit" data-i="editP">Modifier le profil</button>
+<h3 data-i="mycode">Mon code d’invitation</h3>
+<div class="codebox"><b id="pcode"></b><button class="alt" id="pcopy" data-i="copy">Copier</button><button class="main" id="pshare" data-i="share">Inviter</button></div>
+<p class="mut" data-i="refinfo"></p>
+<h3 data-i="plan">Mon compte</h3>
+<div id="plans"></div>
+<p class="mut" style="font-size:.85rem" data-i="paynote"></p>
+<h3 data-i="stats">Statistiques</h3>
+<div class="rules" id="pst"></div>
+<h3 data-i="lang">Langue</h3>
+<select id="lsel2" class="ls"><option value="fr">Français</option><option value="en">English</option><option value="ar">العربية</option><option value="ha">Hausa</option><option value="sw" disabled>Kiswahili (bientôt)</option><option value="dje" disabled>Zarma (bientôt)</option><option value="ff" disabled>Fulfulde (bientôt)</option><option value="tr" disabled>Türkçe (bientôt)</option><option value="id" disabled>Bahasa Indonesia (bientôt)</option><option value="ur" disabled>اردو (bientôt)</option></select>
+<h3 data-i="hist">Historique</h3>
+<div class="rules" id="hist"></div>
+<p class="center mut" style="font-size:.85rem"><a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
+<button class="alt" id="rst" data-i="out">Se déconnecter</button>
+</section>
+</main>
+<div id="updbar" class="hide"><span data-i="updmsg">Nouvelle version disponible</span><button id="updgo" data-i="updbtn">Mettre à jour</button></div>
+<nav id="tabs" class="hide"><button id="th" data-i="tabhome">🏠 Accueil</button><button id="tb" data-i="tabboard">🏆 Classement</button><button id="tk" data-i="tabquran">📖 Coran</button><button id="tp" data-i="tabprof">👤 Profil</button></nav>
+<script>
+var UI={"fr": {"welcome": "Bienvenue", "sub": "Crée ton compte pour jouer à Ilm Quiz.", "lang": "Langue des questions", "phone": "Numéro de téléphone", "age": "J’ai 18 ans ou plus", "getcode": "Recevoir le code par SMS", "code": "Code à 6 chiffres", "ok": "Valider le code", "resend": "Renvoyer le code", "demo": "Mode démo", "real": "Argent réel 🔒", "play": "Jouer pour 50 F", "dep": "Déposer de l’argent", "wd": "Retirer mon argent", "out": "Se déconnecter", "q": "Question", "otp": "Mode démo : aucun SMS n’est envoyé. Ton code est", "e1": "Entre un numéro valide.", "e2": "Le jeu est réservé aux 18 ans et plus.", "e3": "Code incorrect.", "tabquiz": "🎯 Quiz", "tabquran": "📖 Coran", "prev": "← Précédente", "next": "Suivante →", "setT": "Réglages", "fsz": "Taille du texte", "thm": "Thème", "auto": "Auto", "day": "Jour", "night": "Nuit", "trl": "Traduction", "none": "Aucune", "nums": "Numéros des versets", "bms": "Signets", "find": "Rechercher une sourate", "close": "Fermer", "offline": "Connexion internet nécessaire pour charger le Coran.", "loading": "Chargement…", "tabhome": "🏠 Accueil", "tabboard": "🏆 Classement", "tabprof": "👤 Profil", "pts": "points", "featured": "Quiz du jour", "qtitle": "Culture islamique", "cost": "Coût", "reward": "Gains maximum", "left": "Parties restantes aujourd’hui", "playnow": "Jouer maintenant", "nopts": "Points insuffisants. Invite un ami pour gagner 33 points.", "limit": "Limite de parties atteinte aujourd’hui. Passe au compte Moyen ou Premium.", "invite": "Code d’invitation (facultatif)", "badinv": "Code d’invitation invalide.", "boardT": "Classement", "boardnote": "Joueurs de cet appareil. Le classement général viendra avec le serveur.", "wins": "victoires", "profT": "Profil", "free": "Gratuit", "mid": "Moyen", "prem": "Premium", "unl": "Parties illimitées", "perday": "parties par jour", "cur": "Actuel", "choose": "Choisir", "plan": "Mon compte", "paynote": "Paiement simulé : aucun argent n’est prélevé.", "mycode": "Mon code d’invitation", "copy": "Copier", "copied": "Copié !", "share": "Inviter", "refinfo": "Invite un ami : vous gagnez chacun 33 points.", "shr": "Rejoins-moi sur Ilm Quiz ! Mon code d’invitation :", "stats": "Statistiques", "played": "Parties", "won": "Victoires", "best": "Meilleur score", "hist": "Historique", "again": "Rejouer (7 points)", "gohome": "Accueil", "lost": "Perdu", "won20": "20/20 ! Bravo", "result": "Bonnes réponses", "tx_gift": "Bonus de bienvenue", "tx_ref": "Parrainage", "tx_game": "Partie", "tx_res": "Résultat", "tx_plan": "Compte", "lvall": "Tous", "lve": "Facile", "lvm": "Moyen", "lvh": "Difficile", "chooseP": "Choisis ton profil", "nickph": "Ton pseudo", "cont": "Continuer", "editP": "Modifier le profil", "nickerr": "Entre un pseudo de 2 à 16 caractères.", "permonth": "/ mois", "updmsg": "Nouvelle version disponible", "updbtn": "Mettre à jour", "neterr": "Problème de connexion. Réessaie.", "smserr": "Impossible d’envoyer le code. En version test, seuls les numéros de test enregistrés fonctionnent.", "soon": "Bientôt", "testnote": "Version test : utilise un numéro de test enregistré (code fixe).", "otpsent": "Un code à 6 chiffres a été envoyé à"}, "en": {"welcome": "Welcome", "sub": "Create your account to play Ilm Quiz.", "lang": "Question language", "phone": "Phone number", "age": "I am 18 or older", "getcode": "Get the code by SMS", "code": "6-digit code", "ok": "Confirm the code", "resend": "Resend the code", "demo": "Demo mode", "real": "Real money 🔒", "play": "Play for 50 F", "dep": "Deposit money", "wd": "Withdraw my money", "out": "Log out", "q": "Question", "otp": "Demo mode: no SMS is sent. Your code is", "e1": "Enter a valid number.", "e2": "The game is for ages 18 and over.", "e3": "Incorrect code.", "tabquiz": "🎯 Quiz", "tabquran": "📖 Quran", "prev": "← Previous", "next": "Next →", "setT": "Settings", "fsz": "Text size", "thm": "Theme", "auto": "Auto", "day": "Day", "night": "Night", "trl": "Translation", "none": "None", "nums": "Verse numbers", "bms": "Bookmarks", "find": "Search a surah", "close": "Close", "offline": "Internet connection needed to load the Quran.", "loading": "Loading…", "tabhome": "🏠 Home", "tabboard": "🏆 Leaderboard", "tabprof": "👤 Profile", "pts": "points", "featured": "Quiz of the day", "qtitle": "Islamic knowledge", "cost": "Cost", "reward": "Max reward", "left": "Games left today", "playnow": "Play now", "nopts": "Not enough points. Invite a friend to earn 33 points.", "limit": "Daily game limit reached. Upgrade to Medium or Premium.", "invite": "Invitation code (optional)", "badinv": "Invalid invitation code.", "boardT": "Leaderboard", "boardnote": "Players on this device. The global leaderboard will come with the server.", "wins": "wins", "profT": "Profile", "free": "Free", "mid": "Medium", "prem": "Premium", "unl": "Unlimited games", "perday": "games per day", "cur": "Current", "choose": "Choose", "plan": "My account", "paynote": "Simulated payment: no money is charged.", "mycode": "My invitation code", "copy": "Copy", "copied": "Copied!", "share": "Invite", "refinfo": "Invite a friend: you each earn 33 points.", "shr": "Join me on Ilm Quiz! My invitation code:", "stats": "Statistics", "played": "Games", "won": "Wins", "best": "Best score", "hist": "History", "again": "Play again (7 points)", "gohome": "Home", "lost": "Lost", "won20": "20/20! Well done", "result": "Correct answers", "tx_gift": "Welcome bonus", "tx_ref": "Referral", "tx_game": "Game", "tx_res": "Result", "tx_plan": "Account", "lvall": "All", "lve": "Easy", "lvm": "Medium", "lvh": "Hard", "chooseP": "Choose your profile", "nickph": "Your nickname", "cont": "Continue", "editP": "Edit profile", "nickerr": "Enter a nickname of 2 to 16 characters.", "permonth": "/ month", "updmsg": "New version available", "updbtn": "Update", "neterr": "Connection problem. Try again.", "smserr": "Could not send the code. In the test version, only registered test numbers work.", "soon": "Soon", "testnote": "Test version: use a registered test number (fixed code).", "otpsent": "A 6-digit code was sent to"}, "ar": {"welcome": "مرحبًا بك", "sub": "أنشئ حسابك للعب Ilm Quiz.", "lang": "لغة الأسئلة", "phone": "رقم الهاتف", "age": "عمري 18 سنة أو أكثر", "getcode": "استلام الرمز برسالة نصية", "code": "الرمز المكوّن من 6 أرقام", "ok": "تأكيد الرمز", "resend": "إعادة إرسال الرمز", "demo": "الوضع التجريبي", "real": "مال حقيقي 🔒", "play": "العب مقابل 50 فرنك", "dep": "إيداع المال", "wd": "سحب أموالي", "out": "تسجيل الخروج", "q": "السؤال", "otp": "الوضع التجريبي: لا تُرسل رسالة. رمزك هو", "e1": "أدخل رقمًا صحيحًا.", "e2": "اللعبة لمن هم 18 سنة فأكثر.", "e3": "الرمز غير صحيح.", "tabquiz": "🎯 الاختبار", "tabquran": "📖 القرآن", "prev": "→ السابقة", "next": "التالية ←", "setT": "الإعدادات", "fsz": "حجم الخط", "thm": "المظهر", "auto": "تلقائي", "day": "نهاري", "night": "ليلي", "trl": "الترجمة", "none": "بدون", "nums": "أرقام الآيات", "bms": "العلامات", "find": "ابحث عن سورة", "close": "إغلاق", "offline": "يلزم الاتصال بالإنترنت لتحميل القرآن.", "loading": "جارٍ التحميل…", "tabhome": "🏠 الرئيسية", "tabboard": "🏆 الترتيب", "tabprof": "👤 الملف", "pts": "نقطة", "featured": "اختبار اليوم", "qtitle": "الثقافة الإسلامية", "cost": "التكلفة", "reward": "أقصى مكافأة", "left": "المحاولات المتبقية اليوم", "playnow": "العب الآن", "nopts": "نقاطك غير كافية. ادعُ صديقًا لتكسب 33 نقطة.", "limit": "بلغت الحد اليومي للعب. انتقل إلى الحساب المتوسط أو المميز.", "invite": "رمز الدعوة (اختياري)", "badinv": "رمز الدعوة غير صحيح.", "boardT": "الترتيب", "boardnote": "لاعبو هذا الجهاز. الترتيب العام سيأتي مع الخادم.", "wins": "انتصارات", "profT": "الملف الشخصي", "free": "مجاني", "mid": "متوسط", "prem": "مميز", "unl": "ألعاب غير محدودة", "perday": "ألعاب يوميًا", "cur": "الحالي", "choose": "اختر", "plan": "حسابي", "paynote": "دفع تجريبي: لا يُخصم أي مبلغ.", "mycode": "رمز دعوتي", "copy": "نسخ", "copied": "تم النسخ!", "share": "دعوة", "refinfo": "ادعُ صديقًا: يربح كل منكما 33 نقطة.", "shr": "انضم إليّ في Ilm Quiz! رمز دعوتي:", "stats": "الإحصائيات", "played": "الألعاب", "won": "الانتصارات", "best": "أفضل نتيجة", "hist": "السجل", "again": "العب مجددًا (7 نقاط)", "gohome": "الرئيسية", "lost": "خسرت", "won20": "20/20! أحسنت", "result": "الإجابات الصحيحة", "tx_gift": "هدية الترحيب", "tx_ref": "دعوة", "tx_game": "لعبة", "tx_res": "النتيجة", "tx_plan": "الحساب", "lvall": "الكل", "lve": "سهل", "lvm": "متوسط", "lvh": "صعب", "chooseP": "اختر ملفك الشخصي", "nickph": "اسمك المستعار", "cont": "متابعة", "editP": "تعديل الملف", "nickerr": "أدخل اسمًا من 2 إلى 16 حرفًا.", "permonth": "/ شهريًا", "updmsg": "يتوفر إصدار جديد", "updbtn": "تحديث", "neterr": "مشكلة في الاتصال. حاول مجددًا.", "smserr": "تعذّر إرسال الرمز. في النسخة التجريبية تعمل أرقام الاختبار المسجّلة فقط.", "soon": "قريبًا", "testnote": "نسخة تجريبية: استخدم رقم اختبار مسجّلًا (رمز ثابت).", "otpsent": "تم إرسال رمز من 6 أرقام إلى"}, "ha": {"welcome": "Barka da zuwa", "sub": "Buɗe asusunka don yin wasan Ilm Quiz.", "lang": "Harshen tambayoyi", "phone": "Lambar waya", "age": "Shekaruna 18 ko fiye", "getcode": "Karɓi lambar tantancewa ta SMS", "code": "Lambar tantancewa mai lambobi 6", "ok": "Tabbatar da lamba", "resend": "Sake aiko lambar", "demo": "Yanayin gwaji", "real": "Kuɗi na gaske 🔒", "play": "Yi wasa da 50 F", "dep": "Saka kuɗi", "wd": "Cire kuɗina", "out": "Fita", "q": "Tambaya", "otp": "Yanayin gwaji: ba a aika SMS ba. Lambarka ita ce", "e1": "Shigar da lambar waya mai inganci.", "e2": "Wasan na masu shekara 18 ko fiye ne.", "e3": "Lamba ba daidai ba.", "tabquiz": "🎯 Tambayoyi", "tabquran": "📖 Alƙur’ani", "prev": "← Na baya", "next": "Na gaba →", "setT": "Saituna", "fsz": "Girman rubutu", "thm": "Jigo", "auto": "Atomatik", "day": "Rana", "night": "Dare", "trl": "Fassara", "none": "Babu", "nums": "Lambobin ayoyi", "bms": "Alamomi", "find": "Nemi sura", "close": "Rufe", "offline": "Ana buƙatar intanet don loda Alƙur’ani.", "loading": "Ana lodawa…", "tabhome": "🏠 Gida", "tabboard": "🏆 Jerin Matsayi", "tabprof": "👤 Bayani", "pts": "maki", "featured": "Tambayoyin yau", "qtitle": "Ilimin Musulunci", "cost": "Farashi", "reward": "Mafi yawan lada", "left": "Wasannin da suka rage yau", "playnow": "Fara wasa yanzu", "nopts": "Makinka bai isa ba. Gayyaci aboki don samun maki 33.", "limit": "Ka kai iyakar wasannin yau. Haɓaka zuwa Matsakaici ko Premium.", "invite": "Lambar gayyata (zaɓi)", "badinv": "Lambar gayyata ba ta da inganci.", "boardT": "Jerin Matsayi", "boardnote": "’Yan wasa a wannan na’ura. Jerin gabaɗaya zai zo da sabar.", "wins": "nasarori", "profT": "Bayani", "free": "Kyauta", "mid": "Matsakaici", "prem": "Premium", "unl": "Wasanni marasa iyaka", "perday": "wasanni a rana", "cur": "Na yanzu", "choose": "Zaɓi", "plan": "Asusuna", "paynote": "Biyan gwaji: ba a cire kuɗi ba.", "mycode": "Lambar gayyatata", "copy": "Kwafi", "copied": "An kwafa!", "share": "Gayyata", "refinfo": "Gayyaci aboki: kowannenku zai sami maki 33.", "shr": "Ka shiga Ilm Quiz tare da ni! Lambar gayyatata:", "stats": "Ƙididdiga", "played": "Wasanni", "won": "Nasarori", "best": "Mafi kyawun sakamako", "hist": "Tarihi", "again": "Sake wasa (maki 7)", "gohome": "Gida", "lost": "Ka yi rashin nasara", "won20": "20/20! Madalla", "result": "Amsoshi daidai", "tx_gift": "Kyautar maraba", "tx_ref": "Gayyata", "tx_game": "Wasa", "tx_res": "Sakamako", "tx_plan": "Asusu", "lvall": "Duka", "lve": "Sauƙi", "lvm": "Matsakaici", "lvh": "Wahala", "chooseP": "Zaɓi bayananka", "nickph": "Sunanka na wasa", "cont": "Ci gaba", "editP": "Gyara bayani", "nickerr": "Shigar da suna mai haruffa 2 zuwa 16.", "permonth": "/ wata", "updmsg": "Akwai sabon sigar", "updbtn": "Sabunta", "neterr": "Matsalar haɗi. Sake gwadawa.", "smserr": "Ba a iya aika lambar ba. A sigar gwaji, lambobin gwaji da aka yi wa rajista ne kawai ke aiki.", "soon": "Nan ba da jimawa ba", "testnote": "Sigar gwaji: yi amfani da lambar gwaji da aka yi wa rajista (lambar kafaffiya).", "otpsent": "An aika lambar lambobi 6 zuwa"}};
+var lang="fr";try{lang=localStorage.getItem("ilm_lang")||"fr"}catch(e){}
+function T(k){var u=UI[lang]||{};return u[k]||UI.fr[k]}
+var $=function(i){return document.getElementById(i)};
+var API="https://api.alquran.cloud/v1/",QS={fs:30,th:"auto",tr:"",nm:true,s:1},BM=[],SL=[],ED=[];
+try{Object.assign(QS,JSON.parse(localStorage.getItem("ilm_qs")||"{}"));BM=JSON.parse(localStorage.getItem("ilm_bm")||"[]")}catch(e){}
+function qsave(){try{localStorage.setItem("ilm_qs",JSON.stringify(QS));localStorage.setItem("ilm_bm",JSON.stringify(BM))}catch(e){}}
+function jget(u,k){return fetch(u).then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){try{localStorage.setItem(k,JSON.stringify(j))}catch(e){}return j}).catch(function(){var c=null;try{c=JSON.parse(localStorage.getItem(k)||"null")}catch(e){}if(c)return c;throw 0})}
+function ar(n){return String(n).replace(/\d/g,function(d){return "٠١٢٣٤٥٦٧٨٩"[d]})}
+function applyQ(){var q=$("quran");q.style.setProperty("--fs",QS.fs+"px");q.classList.toggle("day",QS.th==="day");q.classList.toggle("night",QS.th==="night");q.classList.toggle("nonum",!QS.nm);$("fsz").value=QS.fs;$("qtheme").value=QS.th;$("qnum").checked=QS.nm}
+function openQuran(){show("quran");applyQ();loadList();loadEds();loadSurah(QS.s)}
+function loadList(){jget(API+"surah","ilm_sl").then(function(j){SL=j.data||[];renderList()}).catch(function(){})}
+function loadEds(){jget(API+"edition?format=text&type=translation","ilm_ed").then(function(j){ED=(j.data||[]).filter(function(e){return ["fr","en","ha","ar","sw","tr","id","ur"].indexOf(e.language)>-1});fillEds()}).catch(function(){ED=[{identifier:"fr.hamidullah",language:"fr",englishName:"Hamidullah"},{identifier:"en.sahih",language:"en",englishName:"Sahih International"},{identifier:"ha.gumi",language:"ha",englishName:"Gumi"}];fillEds()})}
+function fillEds(){var s=$("qtr");s.innerHTML="";var o=document.createElement("option");o.value="";o.textContent=T("none");s.appendChild(o);ED.forEach(function(e){var x=document.createElement("option");x.value=e.identifier;x.textContent=e.language.toUpperCase()+" · "+e.englishName;s.appendChild(x)});s.value=QS.tr}
+function mkBtn(t,f){var x=document.createElement("button");x.className="alt";x.style.cssText="text-align:start;margin-top:8px";x.textContent=t;x.onclick=f;return x}
+function renderList(){var f=($("qfilter").value||"").toLowerCase(),b=$("qsl");b.innerHTML="";
+ SL.filter(function(s){return !f||String(s.number)===f||s.englishName.toLowerCase().indexOf(f)>-1||s.name.indexOf(f)>-1}).forEach(function(s){b.appendChild(mkBtn(s.number+". "+s.englishName+" · "+s.name+" ("+s.numberOfAyahs+")",function(){$("qlist").classList.add("hide");loadSurah(s.number)}))})}
+function renderBm(){var b=$("qbm");b.innerHTML="";BM.forEach(function(k){var p=k.split(":");b.appendChild(mkBtn("🔖 "+p[0]+":"+p[1],function(){$("qlist").classList.add("hide");loadSurah(+p[0],p[1])}))})}
+function loadSurah(n,fa){n=Math.max(1,Math.min(114,n));QS.s=n;qsave();var body=$("qbody");body.textContent=T("loading");$("qt").textContent="…";
+ jget(API+"surah/"+n+"/editions/quran-uthmani"+(QS.tr?","+QS.tr:""),"ilm_s_"+n+"_"+QS.tr).then(function(j){drawSurah(j.data,fa)}).catch(function(){body.textContent=T("offline")})}
+function drawSurah(d,fa){var a=d[0],t=d[1],body=$("qbody");body.innerHTML="";$("qt").textContent=a.number+". "+a.englishName+" · "+a.name;
+ var cont=document.createElement("p");cont.className="ar";
+ a.ayahs.forEach(function(y,i){var key=a.number+":"+y.numberInSurah;
+  var sp=document.createElement("span");sp.className="ay"+(BM.indexOf(key)>-1?" bm":"");sp.id="ay"+y.numberInSurah;
+  sp.appendChild(document.createTextNode(y.text+" "));var nm=document.createElement("span");nm.className="num";nm.textContent="﴿"+ar(y.numberInSurah)+"﴾";sp.appendChild(nm);
+  sp.onclick=function(){var k=BM.indexOf(key);if(k>-1)BM.splice(k,1);else BM.push(key);sp.classList.toggle("bm");qsave()};
+  if(t){var blk=document.createElement("div");blk.className="ab";var p=document.createElement("p");p.className="ar";p.appendChild(sp);blk.appendChild(p);var tp=document.createElement("p");tp.className="tr";tp.dir=(t.edition&&t.edition.direction)||"ltr";tp.textContent=t.ayahs[i]?t.ayahs[i].text:"";blk.appendChild(tp);body.appendChild(blk)}
+  else{cont.appendChild(sp);cont.appendChild(document.createTextNode(" "))}});
+ if(!t)body.appendChild(cont);
+ if(fa){var el=$("ay"+fa);if(el)el.scrollIntoView()}else window.scrollTo(0,0)}
+function openList(f){renderList();renderBm();$("qlist").classList.remove("hide");if(f)$("qfilter").focus()}
+$("qmenu").onclick=function(){openList()};$("qsearch").onclick=function(){openList(1)};
+$("qlclose").onclick=function(){$("qlist").classList.add("hide")};$("qfilter").oninput=renderList;
+$("qgear").onclick=function(){$("qset").classList.remove("hide")};$("qsclose").onclick=function(){$("qset").classList.add("hide")};
+$("fsz").oninput=function(){QS.fs=+this.value;qsave();applyQ()};
+$("qtheme").onchange=function(){QS.th=this.value;qsave();applyQ()};
+$("qnum").onchange=function(){QS.nm=this.checked;qsave();applyQ()};
+$("qtr").onchange=function(){QS.tr=this.value;qsave();loadSurah(QS.s)};
+$("qprev").onclick=function(){loadSurah(QS.s-1)};$("qnext").onclick=function(){loadSurah(QS.s+1)};
+
+var APPV="11.0.0";
+function checkUpd(){try{fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==APPV)$("updbar").classList.remove("hide")}).catch(function(){})}catch(e){}}
+$("updgo").onclick=function(){var done=function(){location.reload()};
+ try{if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})})}catch(e){}
+ try{caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k)}))}).then(done)}catch(e){done()}
+ setTimeout(done,1500)};
+document.addEventListener("visibilitychange",function(){if(!document.hidden)checkUpd()});
+
+var SB_URL="https://yxigtouknglbnqjqfedy.supabase.co",SB_KEY="sb_publishable_jjSq7Fvj5eEIKSrjuITNsw_LkHXHW7_";
+var AV=["🕌","📖","🌙","⭐","🕋","🌿","🐪","🦅","🦁","🌹","☀️","🏔️"],selAv="",setupFrom="home";
+var COST=7,TIME=33,LS="all",SES=null,ME=null,GID=null,tmr=null,left=TIME,locked=false,PH="";
+function loadSes(){try{SES=JSON.parse(localStorage.getItem("ilm_ses")||"null")}catch(e){SES=null}}
+function saveSes(s){SES=s;try{if(s)localStorage.setItem("ilm_ses",JSON.stringify(s));else localStorage.removeItem("ilm_ses")}catch(e){}}
+function toSes(j){return {access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(j.expires_in||3600)}}
+function apiErr(r,j){var m=(j&&(j.message||j.msg||j.error_description||j.error))||("http "+r.status);var e=new Error(m);e.status=r.status;return e}
+function readJson(r){return r.text().then(function(t){var j=null;try{j=t?JSON.parse(t):null}catch(e){}if(!r.ok)throw apiErr(r,j);return j})}
+function authPost(path,body){return fetch(SB_URL+"/auth/v1"+path,{method:"POST",headers:{apikey:SB_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)}).then(readJson)}
+function freshToken(){if(!SES)return Promise.reject(new Error("no_session"));
+ if(SES.expires_at-60>Date.now()/1000)return Promise.resolve(SES.access_token);
+ return authPost("/token?grant_type=refresh_token",{refresh_token:SES.refresh_token}).then(function(j){saveSes(toSes(j));return SES.access_token})}
+function api(path,opt){return freshToken().then(function(tk){opt=opt||{};opt.headers={apikey:SB_KEY,Authorization:"Bearer "+tk,"Content-Type":"application/json"};return fetch(SB_URL+path,opt)}).then(readJson)}
+function rpc(fn,args){return api("/rest/v1/rpc/"+fn,{method:"POST",body:JSON.stringify(args||{})})}
+function errMsg(e){var m=(e&&e.message)||"";
+ if(m==="limit_reached")return T("limit");if(m==="not_enough_points")return T("nopts");
+ if(m==="invalid_code"||m==="already_used"||m==="too_late")return T("badinv");
+ if(m==="bad_nick"||m==="bad_avatar")return T("nickerr");
+ return T("neterr")}
+function normPhone(v){var s=(v||"").trim(),plus=s.charAt(0)==="+",d=s.replace(/\D/g,"");if(!d)return "";
+ if(plus)return "+"+d;if(d.indexOf("00")===0)return "+"+d.slice(2);if(d.length===8)return "+227"+d;return "+"+d}
+function mask(p){return p.length>4?p.slice(0,3)+"••••"+p.slice(-2):p}
+function rows(box,list){box.innerHTML="";list.forEach(function(r){var d=document.createElement("div");d.className="tx";d.innerHTML="<span></span><span></span>";d.children[0].textContent=r[0];d.children[1].textContent=r[1];box.appendChild(d)})}
+function refreshMe(){return rpc("get_me").then(function(m){ME=m;return m})}
+function show(id){["reg","setup","home","game","end","board","quran","prof"].forEach(function(s){$(s).classList.toggle("hide",s!==id)});
+ var on={home:"th",board:"tb",quran:"tk",prof:"tp"};$("tabs").classList.toggle("hide",!on[id]);
+ ["th","tb","tk","tp"].forEach(function(t){$(t).classList.toggle("on",on[id]===t)});
+ if(id==="home")refreshMe().then(renderHome).catch(function(){});
+ if(id==="board")loadLb();if(id==="prof")loadProf()}
+function renderHome(){if(!ME)return;var lb=$("lvls");lb.innerHTML="";
+ ["all","e","m","h"].forEach(function(k){var x=document.createElement("button");x.className=LS===k?"on":"";x.textContent=T("lv"+k);x.onclick=function(){LS=k;renderHome()};lb.appendChild(x)});
+ $("hphone").textContent=(ME.avatar||"👤")+" "+(ME.nick||"");$("hpts").textContent="⭐ "+ME.points+" "+T("pts");$("hplan").textContent=T(ME.tier);
+ var lim=ME.tier==="free"?3:10;$("hleft").textContent=T("left")+" : "+(ME.plays_left===null?"∞":ME.plays_left+"/"+lim);
+ $("hcost").textContent=COST+" "+T("pts");$("hrew").textContent="40 "+T("pts")}
+function loadLb(){rpc("leaderboard",{p_limit:20}).then(function(L){rows($("lb"),L.map(function(x,i){return [(i+1)+". "+(x.avatar||"👤")+" "+x.nick,"⭐ "+x.points+" · "+x.wins+" "+T("wins")]}))}).catch(function(){$("lb").textContent=T("neterr")})}
+function renderProf(){if(!ME)return;$("pph").textContent=ME.nick||"";$("pav").textContent=ME.avatar||"👤";$("pplan2").textContent=T(ME.tier);$("ppts").textContent="⭐ "+ME.points+" "+T("pts");$("pcode").textContent=ME.ref_code;
+ rows($("pst"),[[T("played"),ME.games_played],[T("won"),ME.wins],[T("best"),ME.best+"/20"]]);
+ var b=$("plans");b.innerHTML="";
+ [["free",0],["mid",0.99],["prem",1.99]].forEach(function(x){var t=x[0],c=document.createElement("div");c.className="plan"+(ME.tier===t?" cur":"");
+  var h=document.createElement("b");h.textContent=T(t)+(x[1]?" · "+String(x[1]).replace(".",",")+" $ "+T("permonth"):"");
+  var p=document.createElement("p");p.className="mut";p.textContent=t==="prem"?T("unl"):(t==="free"?3:10)+" "+T("perday");
+  var bt=document.createElement("button");bt.className="alt";bt.disabled=true;bt.textContent=ME.tier===t?T("cur"):T("soon");
+  c.appendChild(h);c.appendChild(p);c.appendChild(bt);b.appendChild(c)})}
+function loadProf(){refreshMe().then(renderProf).catch(function(){});
+ api("/rest/v1/points_ledger?select=delta,reason,note&order=created_at.desc&limit=10").then(function(L){
+  var K={gift:"tx_gift",referral:"tx_ref",game:"tx_game",result:"tx_res"};
+  rows($("hist"),L.map(function(t){return [T(K[t.reason]||"tx_game")+(t.note?" "+t.note:""),(t.delta>0?"+":"")+t.delta]}))}).catch(function(){})}
+function openSetup(from){setupFrom=from;selAv=(ME&&ME.avatar)||AV[0];$("nick").value=(ME&&ME.nick)||"";$("nerr").textContent="";
+ var g=$("avgrid");g.innerHTML="";AV.forEach(function(a){var b=document.createElement("button");b.textContent=a;b.className=a===selAv?"on":"";
+  b.onclick=function(){selAv=a;Array.prototype.forEach.call(g.children,function(c){c.className=c.textContent===a?"on":""})};g.appendChild(b)});
+ show("setup")}
+function route(){if(ME&&ME.nick){if(ME.lang&&ME.lang!==lang)setLang(ME.lang);show("home")}else openSetup("home")}
+function sendOtp(){$("rerr").textContent="";
+ return authPost("/otp",{phone:PH,create_user:true}).then(function(){$("otpmsg").textContent=T("otpsent")+" "+mask(PH);$("otpbox").classList.remove("hide");$("rgo").classList.add("hide");$("rcode").value=""}).catch(function(e){$("rerr").textContent=T("smserr")+" ["+((e&&e.message)||"")+"]"})}
+$("rgo").onclick=function(){var p=normPhone($("rtel").value);if(p.replace(/\D/g,"").length<9||p.replace(/\D/g,"").length>15){$("rerr").textContent=T("e1");return}PH=p;sendOtp()};
+$("rre").onclick=sendOtp;
+$("rok").onclick=function(){var c=($("rcode").value||"").trim();if(c.length<4){$("rerr").textContent=T("e3");return}
+ authPost("/verify",{type:"sms",phone:PH,token:c}).then(function(j){saveSes(toSes(j));return refreshMe()}).then(function(){
+  var inv=($("rinv").value||"").trim().toUpperCase(),nerr="";
+  if(!ME.nick&&inv){return rpc("apply_invite",{p_code:inv}).then(refreshMe).catch(function(e){nerr=errMsg(e)}).then(function(){route();if(nerr)$("nerr").textContent=nerr})}
+  route()}).catch(function(e){var bad=e&&(e.status===400||e.status===401||e.status===403||e.status===422);$("rerr").textContent=(bad?T("e3"):T("neterr"))+" ["+((e&&e.message)||"")+"]"})};
+$("setok").onclick=function(){var n=$("nick").value.trim();if(n.length<2||n.length>16){$("nerr").textContent=T("nickerr");return}
+ rpc("set_profile",{p_nick:n,p_avatar:selAv,p_lang:lang}).then(refreshMe).then(function(){show(setupFrom||"home")}).catch(function(e){$("nerr").textContent=errMsg(e)})};
+$("pedit").onclick=function(){openSetup("prof")};
+function start(){var m=$("hmsg");m.textContent="";
+ rpc("start_game",{p_level:LS,p_lang:lang}).then(function(r){GID=r.game_id;show("game");return nextQ()}).catch(function(e){m.textContent=errMsg(e);show("home")})}
+function nextQ(){locked=true;return rpc("next_question",{p_game:GID}).then(drawQ)}
+function drawQ(q){locked=false;$("num").textContent=T("q")+" "+q.n+"/"+q.total;$("prog").style.width=((q.n-1)/q.total*100)+"%";$("q").textContent=q.q;
+ var box=$("opts");box.innerHTML="";q.options.forEach(function(t){var b=document.createElement("button");b.className="opt";b.textContent=t;b.onclick=function(){send(b,t)};box.appendChild(b)});
+ left=Math.max(1,q.seconds_left);clearInterval(tmr);tick();tmr=setInterval(function(){left--;tick();if(left<=0){clearInterval(tmr);send(null,"")}},1000)}
+function tick(){$("tm").textContent=left+" s";$("tbar").style.width=(left/TIME*100)+"%"}
+function send(b,choice){if(locked)return;locked=true;clearInterval(tmr);
+ rpc("answer_question",{p_game:GID,p_choice:choice}).then(function(r){
+  document.querySelectorAll(".opt").forEach(function(x){x.disabled=true;if(x.textContent===r.correct_answer)x.classList.add("ok")});
+  if(b&&!r.correct)b.classList.add("bad");
+  setTimeout(function(){if(r.finished)finish(r);else nextQ().catch(function(){$("hmsg").textContent=T("neterr");show("home")})},900)
+ }).catch(function(){$("hmsg").textContent=T("neterr");show("home")})}
+function finish(r){var perfect=r.score===20;if(ME)ME.points=r.points;
+ $("emo").textContent=perfect?"🏆":"❌";$("etitle").textContent=perfect?T("won20"):T("lost");
+ $("emsg").textContent=T("result")+" : "+r.score+"/20 · +"+r.earned+" "+T("pts")+" · ⭐ "+r.points;$("again").textContent=T("again");show("end")}
+$("play").onclick=start;$("again").onclick=function(){show("home");start()};$("egh").onclick=function(){show("home")};
+$("th").onclick=function(){show("home")};$("tb").onclick=function(){show("board")};$("tp").onclick=function(){show("prof")};$("tk").onclick=openQuran;
+$("pcopy").onclick=function(){var c=ME&&ME.ref_code;if(!c)return;try{navigator.clipboard.writeText(c)}catch(e){}$("pcopy").textContent=T("copied");setTimeout(function(){$("pcopy").textContent=T("copy")},1500)};
+$("pshare").onclick=function(){var c=ME&&ME.ref_code;if(!c)return;var t=T("shr")+" "+c;if(navigator.share){navigator.share({text:t+" "+location.href}).catch(function(){})}else{try{navigator.clipboard.writeText(t)}catch(e){}$("pshare").textContent=T("copied");setTimeout(function(){$("pshare").textContent=T("share")},1500)}};
+$("rst").onclick=function(){var tk=SES&&SES.access_token;if(tk){try{fetch(SB_URL+"/auth/v1/logout",{method:"POST",headers:{apikey:SB_KEY,Authorization:"Bearer "+tk}})}catch(e){}}
+ saveSes(null);ME=null;PH="";$("otpbox").classList.add("hide");$("rgo").classList.remove("hide");$("rtel").value="";$("rinv").value="";$("rcode").value="";$("rerr").textContent="";show("reg")};
+function setLang(l){lang=l;try{localStorage.setItem("ilm_lang",l)}catch(e){}
+ document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";
+ document.querySelectorAll("[data-i]").forEach(function(e){e.textContent=T(e.getAttribute("data-i"))});
+ $("lsel").value=l;$("lsel2").value=l;$("qfilter").placeholder=T("find");$("rinv").placeholder=T("invite");$("nick").placeholder=T("nickph");
+ if(ME){renderHome();renderProf();if(!$("board").classList.contains("hide"))loadLb()}}
+$("lsel").onchange=function(){setLang(this.value)};$("lsel2").onchange=function(){setLang(this.value);if(ME&&ME.nick)rpc("set_profile",{p_nick:ME.nick,p_avatar:ME.avatar||AV[0],p_lang:lang}).catch(function(){})};
+loadSes();setLang(lang);
+if(SES){refreshMe().then(route).catch(function(e){if(e&&(e.status===401||e.status===403||e.message==="no_session"||/jwt|token/i.test(e.message||"")))saveSes(null);show("reg");if(SES)$("rerr").textContent=T("neterr")})}else show("reg");
+checkUpd();
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}
+</script>
+</body>
+</html>
