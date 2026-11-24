@@ -119,7 +119,7 @@ select.ls{margin:0 0 12px}
 <button class="alt" id="esign" data-i="btnsignup">Créer un compte</button>
 <button class="alt" id="ggl" data-i="btngoogle">Continuer avec Google</button>
 <p class="mut err" id="emsg"></p>
-<p class="mut center" style="margin-top:14px">Version 11.2.0 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
+<p class="mut center" style="margin-top:14px">Version 11.2.1 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
 </section>
 
 <section id="setup" class="hide">
@@ -242,7 +242,7 @@ $("qnum").onchange=function(){QS.nm=this.checked;qsave();applyQ()};
 $("qtr").onchange=function(){QS.tr=this.value;qsave();loadSurah(QS.s)};
 $("qprev").onclick=function(){loadSurah(QS.s-1)};$("qnext").onclick=function(){loadSurah(QS.s+1)};
 
-var APPV="11.2.0";
+var APPV="11.2.1";
 function checkUpd(){try{fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==APPV)$("updbar").classList.remove("hide")}).catch(function(){})}catch(e){}}
 $("updgo").onclick=function(){var done=function(){location.reload()};
  try{if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})})}catch(e){}
@@ -340,11 +340,13 @@ $("rst").onclick=function(){var tk=SES&&SES.access_token;if(tk){try{fetch(SB_URL
 var REC={on:false,r:null,els:[],norm:[],i:0,bad:-1};
 var SRC=window.SpeechRecognition||window.webkitSpeechRecognition;
 function recNorm(w){return String(w||"").replace(/[\u064B-\u065F\u0670\u0640\u06D6-\u06ED]/g,"").replace(/[\u0622\u0623\u0625\u0671]/g,"\u0627").replace(/\u0649/g,"\u064A").replace(/\u0629/g,"\u0647").replace(/[^\u0621-\u064A]/g,"")}
-function recStep(norm,i,toks){for(var k=0;k<toks.length;k++){var t=toks[k];if(!t)continue;if(i>=norm.length)return{i:i,bad:-1,done:true};
- if(t===norm[i]){i++;continue}
- if(i>=1&&t===norm[i-1])continue;if(i>=2&&t===norm[i-2])continue;
- return{i:i,bad:i,done:false}}
- return{i:i,bad:-1,done:i>=norm.length}}
+function recStep(norm,i,toks){var wrong=false;
+ for(var k=0;k<toks.length;k++){var t=toks[k];if(!t)continue;
+  if(i>=norm.length)return{i:i,bad:-1,done:true};
+  if(t===norm[i]){i++;wrong=false;continue}
+  var rep=false;for(var j=0;j<i;j++){if(norm[j]===t){rep=true;break}}
+  if(!rep)wrong=true}
+ return{i:i,bad:(wrong&&i<norm.length)?i:-1,done:i>=norm.length}}
 function recPaint(){REC.els.forEach(function(e,k){e.classList.remove("ok","bad");if(k<REC.i)e.classList.add("ok");else if(k===REC.bad)e.classList.add("bad")});var b=REC.els[REC.bad];if(b)b.scrollIntoView({block:"center"})}
 function recHandle(txt){var toks=String(txt||"").split(/\s+/).map(recNorm).filter(Boolean);var r=recStep(REC.norm,REC.i,toks);REC.i=r.i;REC.bad=r.bad;recPaint();
  if(r.done){$("qstat").textContent=T("recdone");recStop();return}
