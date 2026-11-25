@@ -101,8 +101,15 @@ html,body{overscroll-behavior-y:contain}
 <div class="hero"><svg viewBox="0 0 200 132" role="img" aria-label="Coran"><path d="M70 122L130 88M130 122L70 88" stroke="#b8860b" stroke-width="6" stroke-linecap="round"/><path d="M28 44Q64 32 100 48V94Q64 80 28 90Z" fill="#faecbe" stroke="#ffb800" stroke-width="2"/><path d="M172 44Q136 32 100 48V94Q136 80 172 90Z" fill="#faecbe" stroke="#ffb800" stroke-width="2"/><path d="M40 58Q64 52 90 62M40 68Q64 62 90 72M40 78Q64 72 90 82M160 58Q136 52 110 62M160 68Q136 62 110 72M160 78Q136 72 110 82" stroke="#0c2f26" stroke-width="2" fill="none" stroke-linecap="round"/><mask id="cm"><rect width="200" height="132" fill="#fff"/><circle cx="107" cy="16" r="10" fill="#000"/></mask><circle cx="98" cy="18" r="13" fill="#ffb800" mask="url(#cm)"/><circle cx="118" cy="13" r="2.5" fill="#ffb800"/></svg><h1 data-i="welcome">Bienvenue</h1><p data-i="sub">Crée ton compte pour jouer à Ilm Quiz.</p></div>
 <label><span data-i="lang">Langue des questions</span>
 <select id="lsel" class="ls"><option value="fr">Français</option><option value="en">English</option><option value="ar">العربية</option><option value="ha">Hausa</option><option value="sw" disabled>Kiswahili (bientôt)</option><option value="dje" disabled>Zarma (bientôt)</option><option value="ff" disabled>Fulfulde (bientôt)</option><option value="tr" disabled>Türkçe (bientôt)</option><option value="id" disabled>Bahasa Indonesia (bientôt)</option><option value="ur" disabled>اردو (bientôt)</option></select></label>
+<input id="eml" type="email" autocomplete="email" data-ph="emailph" placeholder="Adresse email">
+<input id="pwd" type="password" autocomplete="current-password" data-ph="pwdph" placeholder="Mot de passe">
+<button class="alt" id="elog" data-i="btnlogin">Se connecter</button>
+<button class="alt" id="esign" data-i="btnsignup">Créer un compte</button>
+<button class="alt" id="ggl" data-i="btngoogle">Continuer avec Google</button>
+<p class="mut err" id="emsg"></p>
+<div class="sep" data-i="orsep">ou</div>
 <label><span data-i="phone">Numéro de téléphone</span>
-<input id="rtel" type="tel" inputmode="tel" placeholder="Ex. 90 00 00 00"></label>
+<div style="display:flex;gap:8px"><select id="ccode" style="width:45%;margin:6px 0 10px"><option value="227">Niger +227</option><option value="221">Sénégal +221</option><option value="223">Mali +223</option><option value="226">Burkina Faso +226</option><option value="225">Côte d’Ivoire +225</option><option value="228">Togo +228</option><option value="229">Bénin +229</option><option value="234">Nigeria +234</option><option value="233">Ghana +233</option><option value="237">Cameroun +237</option><option value="235">Tchad +235</option><option value="212">Maroc +212</option><option value="213">Algérie +213</option><option value="216">Tunisie +216</option><option value="20">Égypte +20</option><option value="254">Kenya +254</option><option value="255">Tanzanie +255</option><option value="256">Ouganda +256</option><option value="250">Rwanda +250</option><option value="243">RDC +243</option><option value="242">Congo +242</option><option value="241">Gabon +241</option><option value="33">France +33</option><option value="44">Royaume-Uni +44</option><option value="966">Arabie saoudite +966</option><option value="971">Émirats +971</option><option value="90">Turquie +90</option><option value="49">Allemagne +49</option><option value="1">États-Unis / Canada +1</option></select><input id="rtel" type="tel" inputmode="tel" placeholder="Ex. 90 00 00 00" style="flex:1"></div></label>
 <input id="rinv" placeholder="Code d’invitation (facultatif)" autocapitalize="characters">
 <p class="mut" data-i="testnote"></p>
 <p class="mut err" id="rerr"></p>
@@ -114,14 +121,8 @@ html,body{overscroll-behavior-y:contain}
 <button class="alt" id="rre" data-i="resend">Renvoyer le code</button>
 </div>
 <button class="main" id="rgo" data-i="getcode">Recevoir le code par SMS</button>
-<div class="sep" data-i="orsep">ou</div>
-<input id="eml" type="email" autocomplete="email" data-ph="emailph" placeholder="Adresse email">
-<input id="pwd" type="password" autocomplete="current-password" data-ph="pwdph" placeholder="Mot de passe">
-<button class="alt" id="elog" data-i="btnlogin">Se connecter</button>
-<button class="alt" id="esign" data-i="btnsignup">Créer un compte</button>
-<button class="alt" id="ggl" data-i="btngoogle">Continuer avec Google</button>
-<p class="mut err" id="emsg"></p>
-<p class="mut center" style="margin-top:14px">Version 11.4.1 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
+
+<p class="mut center" style="margin-top:14px">Version 11.5.0 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
 </section>
 
 <section id="setup" class="hide">
@@ -257,7 +258,7 @@ $("qnum").onchange=function(){QS.nm=this.checked;qsave();applyQ()};
 $("qtr").onchange=function(){QS.tr=this.value;qsave();loadSurah(QS.s)};
 $("qprev").onclick=function(){loadSurah(QS.s-1)};$("qnext").onclick=function(){loadSurah(QS.s+1)};
 
-var APPV="11.4.1";
+var APPV="11.5.0";
 function checkUpd(){try{fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==APPV)$("updbar").classList.remove("hide")}).catch(function(){})}catch(e){}}
 $("updgo").onclick=function(){var done=function(){location.reload()};
  try{if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})})}catch(e){}
@@ -284,8 +285,7 @@ function errMsg(e){var m=(e&&e.message)||"";
  if(m==="invalid_code"||m==="already_used"||m==="too_late")return T("badinv");
  if(m==="bad_nick"||m==="bad_avatar")return T("nickerr");
  return T("neterr")}
-function normPhone(v){var s=(v||"").trim(),plus=s.charAt(0)==="+",d=s.replace(/\D/g,"");if(!d)return "";
- if(plus)return "+"+d;if(d.indexOf("00")===0)return "+"+d.slice(2);if(d.length===8)return "+227"+d;return "+"+d}
+function normPhone(v,cc){var s=(v||"").trim();if(s.charAt(0)==="+")return "+"+s.replace(/\D/g,"");if(s.indexOf("00")===0)return "+"+s.replace(/\D/g,"").slice(2);var d=s.replace(/\D/g,"").replace(/^0+/,"");if(!d)return "";return "+"+cc+d}
 function mask(p){return p.length>4?p.slice(0,3)+"••••"+p.slice(-2):p}
 function rows(box,list){box.innerHTML="";list.forEach(function(r){var d=document.createElement("div");d.className="tx";d.innerHTML="<span></span><span></span>";d.children[0].textContent=r[0];d.children[1].textContent=r[1];box.appendChild(d)})}
 function refreshMe(){return rpc("get_me").then(function(m){ME=m;return m})}
@@ -319,7 +319,7 @@ function openSetup(from){setupFrom=from;selAv=(ME&&ME.avatar)||AV[0];$("nick").v
 function route(){if(ME&&ME.nick){if(ME.lang&&ME.lang!==lang)setLang(ME.lang);show("home")}else openSetup("home")}
 function sendOtp(){$("rerr").textContent="";
  return authPost("/otp",{phone:PH,create_user:true}).then(function(){$("otpmsg").textContent=T("otpsent")+" "+mask(PH);$("otpbox").classList.remove("hide");$("rgo").classList.add("hide");$("rcode").value=""}).catch(function(e){$("rerr").textContent=T("smserr")+" ["+((e&&e.message)||"")+"]"})}
-$("rgo").onclick=function(){var p=normPhone($("rtel").value);if(p.replace(/\D/g,"").length<9||p.replace(/\D/g,"").length>15){$("rerr").textContent=T("e1");return}PH=p;sendOtp()};
+$("rgo").onclick=function(){var p=normPhone($("rtel").value,$("ccode").value);if(p.replace(/\D/g,"").length<9||p.replace(/\D/g,"").length>15){$("rerr").textContent=T("e1");return}PH=p;sendOtp()};
 $("rre").onclick=sendOtp;
 $("rok").onclick=function(){var c=($("rcode").value||"").trim();if(c.length<4){$("rerr").textContent=T("e3");return}
  authPost("/verify",{type:"sms",phone:PH,token:c}).then(function(j){saveSes(toSes(j));return refreshMe()}).then(function(){
