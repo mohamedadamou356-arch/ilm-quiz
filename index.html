@@ -119,7 +119,7 @@ select.ls{margin:0 0 12px}
 <button class="alt" id="esign" data-i="btnsignup">Créer un compte</button>
 <button class="alt" id="ggl" data-i="btngoogle">Continuer avec Google</button>
 <p class="mut err" id="emsg"></p>
-<p class="mut center" style="margin-top:14px">Version 11.3.0 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
+<p class="mut center" style="margin-top:14px">Version 11.3.1 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
 </section>
 
 <section id="setup" class="hide">
@@ -243,7 +243,7 @@ $("qnum").onchange=function(){QS.nm=this.checked;qsave();applyQ()};
 $("qtr").onchange=function(){QS.tr=this.value;qsave();loadSurah(QS.s)};
 $("qprev").onclick=function(){loadSurah(QS.s-1)};$("qnext").onclick=function(){loadSurah(QS.s+1)};
 
-var APPV="11.3.0";
+var APPV="11.3.1";
 function checkUpd(){try{fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==APPV)$("updbar").classList.remove("hide")}).catch(function(){})}catch(e){}}
 $("updgo").onclick=function(){var done=function(){location.reload()};
  try{if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})})}catch(e){}
@@ -369,12 +369,16 @@ $("qrec").onclick=recStart;
 
 var SPK_LANG={fr:"fr-FR",en:"en-US",ar:"ar-SA",ha:"ha-NG"};
 function note(m){if(!$("quran").classList.contains("hide")){$("qstat").textContent=m}else{$("spkmsg").textContent=m}}
+function pickVoices(cb){var vs=(window.speechSynthesis&&speechSynthesis.getVoices())||[];if(vs.length){cb(vs);return}
+ var done=false;speechSynthesis.onvoiceschanged=function(){if(!done){done=true;cb(speechSynthesis.getVoices()||[])}};
+ setTimeout(function(){if(!done){done=true;cb(speechSynthesis.getVoices()||[])}},1200)}
 function speak(text,l){if(!("speechSynthesis" in window)||!text)return;
- var u=new SpeechSynthesisUtterance(String(text));var code=SPK_LANG[l]||"fr-FR";u.lang=code;
- var vs=speechSynthesis.getVoices()||[];
- if(vs.length){var v=vs.find(function(x){return x.lang.replace("_","-").toLowerCase()===code.toLowerCase()})||vs.find(function(x){return x.lang.slice(0,2)===code.slice(0,2)});
-  if(!v){note(T("nospk"));return}u.voice=v}
- try{speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){note(T("nospk"))}}
+ var code=SPK_LANG[l]||"fr-FR";var pre=code.slice(0,2).toLowerCase();
+ pickVoices(function(vs){
+  var v=vs.find(function(x){return x.lang.replace("_","-").toLowerCase()===code.toLowerCase()})||vs.find(function(x){return x.lang.slice(0,2).toLowerCase()===pre});
+  if(!v){note(T("nospk"));return}
+  var u=new SpeechSynthesisUtterance(String(text));u.lang=v.lang;try{u.voice=v}catch(e){}
+  try{speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){note(T("nospk"))}})}
 $("qspk").onclick=function(){var parts=[$("q").textContent];[].forEach.call(document.querySelectorAll("#opts .opt"),function(x){parts.push(x.getAttribute("data-a"))});speak(parts.join(". "),lang)};
 function setLang(l){lang=l;try{localStorage.setItem("ilm_lang",l)}catch(e){}
  document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";
