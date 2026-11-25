@@ -122,7 +122,7 @@ html,body{overscroll-behavior-y:contain}
 </div>
 <button class="main" id="rgo" data-i="getcode">Recevoir le code par SMS</button>
 
-<p class="mut center" style="margin-top:14px">Version 11.5.1 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
+<p class="mut center" style="margin-top:14px">Version 11.5.2 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
 </section>
 
 <section id="setup" class="hide">
@@ -179,7 +179,7 @@ html,body{overscroll-behavior-y:contain}
 </section>
 
 <section id="quran" class="hide">
-<div class="qbar"><button id="qmenu" aria-label="Menu">☰</button><div id="qt" class="qtitle">…</div><button id="qsearch" aria-label="Search">🔍</button><button id="qrec" aria-label="Réciter">🎤</button><button id="qgear" aria-label="Settings">⚙</button></div>
+<div class="qbar"><button id="qmenu" aria-label="Menu">☰</button><div id="qt" class="qtitle">…</div><button id="qsearch" aria-label="Search">🔍</button><button id="qrec" aria-label="Réciter">🎤</button><button id="qread" aria-label="Lire" style="width:40px;padding:10px 0">🎙️</button><button id="qgear" aria-label="Settings">⚙</button></div>
 <div id="qbody" class="qbody"></div>
 <p id="qstat" class="mut center" style="font-size:.85rem;min-height:1.2em"></p>
 <div class="qnav"><button id="qprev" class="alt" data-i="prev">← Précédente</button><button id="qnext" class="alt" data-i="next">Suivante →</button></div>
@@ -236,7 +236,7 @@ function mkBtn(t,f){var x=document.createElement("button");x.className="alt";x.s
 function renderList(){var f=($("qfilter").value||"").toLowerCase(),b=$("qsl");b.innerHTML="";
  SL.filter(function(s){return !f||String(s.number)===f||s.englishName.toLowerCase().indexOf(f)>-1||s.name.indexOf(f)>-1}).forEach(function(s){b.appendChild(mkBtn(s.number+". "+s.englishName+" · "+s.name+" ("+s.numberOfAyahs+")",function(){$("qlist").classList.add("hide");loadSurah(s.number)}))})}
 function renderBm(){var b=$("qbm");b.innerHTML="";BM.forEach(function(k){var p=k.split(":");b.appendChild(mkBtn("🔖 "+p[0]+":"+p[1],function(){$("qlist").classList.add("hide");loadSurah(+p[0],p[1])}))})}
-function loadSurah(n,fa){n=Math.max(1,Math.min(114,n));recStop();QS.s=n;qsave();var body=$("qbody");body.textContent=T("loading");$("qt").textContent="…";
+function loadSurah(n,fa){n=Math.max(1,Math.min(114,n));recStop();if(READING){speechSynthesis.cancel();READING=false}QS.s=n;qsave();var body=$("qbody");body.textContent=T("loading");$("qt").textContent="…";
  jget(API+"surah/"+n+"/editions/quran-uthmani"+(QS.tr?","+QS.tr:""),"ilm_s_"+n+"_"+QS.tr).then(function(j){drawSurah(j.data,fa)}).catch(function(){body.textContent=T("offline")})}
 function drawSurah(d,fa){var a=d[0],t=d[1],body=$("qbody");body.innerHTML="";$("qt").textContent=a.number+". "+a.englishName+" · "+a.name;
  var cont=document.createElement("p");cont.className="ar";
@@ -258,7 +258,7 @@ $("qnum").onchange=function(){QS.nm=this.checked;qsave();applyQ()};
 $("qtr").onchange=function(){QS.tr=this.value;qsave();loadSurah(QS.s)};
 $("qprev").onclick=function(){loadSurah(QS.s-1)};$("qnext").onclick=function(){loadSurah(QS.s+1)};
 
-var APPV="11.5.1";
+var APPV="11.5.2";
 function checkUpd(){try{fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==APPV)$("updbar").classList.remove("hide")}).catch(function(){})}catch(e){}}
 $("updgo").onclick=function(){var done=function(){location.reload()};
  try{if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})})}catch(e){}
@@ -421,6 +421,21 @@ function tFinish(r){TMODE=false;$("emo").textContent="🏅";$("etitle").textCont
 $("tgo").onclick=function(){tStart()};
 $("tback").onclick=function(){show("home")};
 $("gtourn").onclick=function(){show("tourn")};
+
+var READING=false;
+function readSurah(){
+ if(READING){speechSynthesis.cancel();READING=false;$("qread").textContent="🎙️";return}
+ var verses=[].slice.call(document.querySelectorAll("#qbody .ay")).map(function(el){return [].slice.call(el.querySelectorAll(".w")).map(function(w){return w.textContent}).join(" ")}).filter(Boolean);
+ if(!verses.length)return;
+ pickVoices(function(vs){
+  var v=vs.find(function(x){return x.lang.replace("_","-").toLowerCase()==="ar-sa"})||vs.find(function(x){return x.lang.slice(0,2).toLowerCase()==="ar"});
+  if(!v){note(T("nospk"));return}
+  speechSynthesis.cancel();READING=true;$("qread").textContent="⏹";
+  verses.forEach(function(txt,k){var u=new SpeechSynthesisUtterance(txt);u.lang=v.lang;try{u.voice=v}catch(e){}
+   if(k===verses.length-1)u.onend=function(){READING=false;$("qread").textContent="🎙️"};
+   speechSynthesis.speak(u)});
+ })}
+$("qread").onclick=readSurah;
 function setLang(l){lang=l;try{localStorage.setItem("ilm_lang",l)}catch(e){}
  document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";
  document.querySelectorAll("[data-i]").forEach(function(e){e.textContent=T(e.getAttribute("data-i"))});
