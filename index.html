@@ -145,7 +145,7 @@ html,body{overscroll-behavior-y:contain}
 </div>
 <button class="main" id="rgo" data-i="getcode">Recevoir le code par SMS</button>
 
-<p class="mut center" style="margin-top:14px">Version 11.12.0 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
+<p class="mut center" style="margin-top:14px">Version 11.12.2 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
 </section>
 
 <section id="setup" class="hide">
@@ -202,12 +202,6 @@ html,body{overscroll-behavior-y:contain}
 <h1>Mubarāza</h1>
 <p class="mut" data-i="tournInfo"></p>
 <div id="mbstat"></div>
-<div id="mbcreate" class="col">
-<button class="main" id="mb2">2 joueurs</button>
-<button class="main" id="mb4">4 joueurs</button>
-<button class="main" id="mb8">8 joueurs</button>
-</div>
-<input id="mbcode" placeholder="Code de la salle (ex. MBZ7K2)" autocapitalize="characters">
 <button class="alt" id="mbjoin" data-i="mbJoin">Rejoindre la salle</button>
 <button class="main hide" id="mbgo" data-i="mbGo">Jouer</button>
 <p class="mut err" id="tmsg"></p>
@@ -310,7 +304,7 @@ $("qnum").onchange=function(){QS.nm=this.checked;qsave();applyQ()};
 $("qtr").onchange=function(){QS.tr=this.value;qsave();loadSurah(QS.s)};
 $("qprev").onclick=function(){loadSurah(QS.s-1)};$("qnext").onclick=function(){loadSurah(QS.s+1)};
 
-var APPV="11.12.0";
+var APPV="11.12.2";
 function checkUpd(){try{fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&j.v!==APPV)$("updbar").classList.remove("hide")}).catch(function(){})}catch(e){}}
 $("updgo").onclick=function(){var done=function(){location.reload()};
  try{if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})})}catch(e){}
@@ -497,23 +491,23 @@ function tErr(e){var m=(e&&e.message)||"";if(m==="tier_required")return T("tourn
 var MB_ROOM=null;
 function mbErr(e){var m=(e&&e.message)||"";var M={tier_required:T("tournLocked"),already_in_room:T("mbAlready"),room_not_found:T("mbRoomNotFound"),room_closed:T("mbClosed"),already_joined:T("mbJoined"),room_full:T("mbFull"),bad_size:T("neterr")};return M[m]||T("neterr")}
 function renderMub(st){var box=$("mbstat");box.innerHTML="";var room=st&&st.room;
- var hasRoom=!!room;
- $("mbcreate").classList.toggle("hide",hasRoom);$("mbcode").classList.toggle("hide",hasRoom);$("mbjoin").classList.toggle("hide",hasRoom);
- $("mbgo").classList.add("hide");
+ $("mbgo").classList.add("hide");$("mbjoin").classList.add("hide");
  if(!room){rows($("tlb"),[]);return}
  rows(box,[[T("mbCode"),room.code],[T("mbPlayers"),(st.players||[]).length+" / "+room.size],[T("mbStatus"),room.status]]);
- if(room.status==="waiting"){var m=document.createElement("p");m.className="mut";m.textContent=T("mbWait");box.appendChild(m)}
- if(room.status==="playing"&&!st.my_finished)$("mbgo").classList.remove("hide");
+ if(!st.joined&&room.status==="waiting"){$("mbjoin").classList.remove("hide");$("mbjoin").dataset.code=room.code}
+ if(room.status==="waiting"&&st.joined){var m=document.createElement("p");m.className="mut";m.textContent=T("mbWait");box.appendChild(m)}
+ if(room.status==="playing"&&st.joined&&!st.my_finished)$("mbgo").classList.remove("hide");
  rows($("tlb"),(st.players||[]).map(function(x,i){return [(i+1)+". "+(x.avatar||"👤")+" "+x.nick,"⭐ "+x.score+(x.finished?"":" …")]}))}
 function loadMub(){return rpc("mubaraza_status").then(function(st){MB_ROOM=st;renderMub(st);return st}).catch(function(e){$("tmsg").textContent=mbErr(e)})}
 function renderTourn(){if(!ME)return;$("tmsg").textContent="";
  var locked=!(ME.tier==="prem"||ME.tier==="sup");
  if(locked){$("mbstat").innerHTML="";var d=document.createElement("p");d.textContent=T("tournLocked");$("mbstat").appendChild(d);
-  ["mbcreate","mbcode","mbjoin","mbgo"].forEach(function(id){$(id).classList.add("hide")});rows($("tlb"),[]);return}
+  $("mbjoin").classList.add("hide");$("mbgo").classList.add("hide");rows($("tlb"),[]);return}
  loadMub()}
+function tFinish(r){TMODE=false;$("emo").textContent="🏅";$("etitle").textContent=T("tournDone");
+ $("emsg").textContent=T("tournScore")+" : "+r.score+"/20";$("again").classList.add("hide");show("end")}
 function mbCreate(size){$("tmsg").textContent="";rpc("mubaraza_create",{p_size:size}).then(loadMub).catch(function(e){$("tmsg").textContent=mbErr(e)})}
-$("mb2").onclick=function(){mbCreate(2)};$("mb4").onclick=function(){mbCreate(4)};$("mb8").onclick=function(){mbCreate(8)};
-$("mbjoin").onclick=function(){var c=($("mbcode").value||"").trim().toUpperCase();if(!c)return;$("tmsg").textContent="";
+$("mbjoin").onclick=function(){var c=$("mbjoin").dataset.code;if(!c)return;$("tmsg").textContent="";
  rpc("mubaraza_join",{p_code:c}).then(loadMub).catch(function(e){$("tmsg").textContent=mbErr(e)})};
 function mbPlay(){TMODE=true;$("tmsg").textContent="";
  rpc("mubaraza_status").then(function(st){if(!st.room||st.room.status!=="playing"||st.my_finished)throw new Error("not_ready");show("game");return nextQ()})
