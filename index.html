@@ -348,7 +348,7 @@ var CUR="reg";function show(id){CUR=id;var fb=document.getElementById("fhelp");i
  ["th","tb","tk","tp"].forEach(function(t){$(t).classList.toggle("on",on[id]===t)});
  if(id==="home"){refreshMe().then(renderHome).catch(function(){});checkTourNotif()}
  if(id==="board")loadLb();if(id==="prof"){loadProf();renderNotifBtn()}if(id==="tourn")renderTourn();if(id==="help"){renderHelp();renderVoices()}}
-function renderHome(){if(!ME)return;var lb=$("lvls");lb.innerHTML="";
+function renderHome(){if(!ME)return;syncWidget();var lb=$("lvls");lb.innerHTML="";
  ["all","e","m","h"].forEach(function(k){var x=document.createElement("button");x.className=LS===k?"on":"";x.textContent=T("lv"+k);x.onclick=function(){LS=k;renderHome()};lb.appendChild(x)});
  $("hphone").textContent=(ME.avatar||"👤")+" "+(ME.nick||"");$("hpts").textContent="⭐ "+ME.points+" "+T("pts");$("hplan").textContent=T(ME.tier);
  var lim=ME.tier==="free"?3:10;$("hleft").textContent=T("left")+" : "+(ME.plays_left===null?"∞":ME.plays_left+"/"+lim);
@@ -416,7 +416,7 @@ function send(b,choice){if(locked)return;locked=true;clearInterval(tmr);
   if(b&&!r.correct)b.classList.add("bad");
   setTimeout(function(){if(r.finished){if(TMODE)tFinish(r);else finish(r)}else nextQ().catch(function(){$("hmsg").textContent=T("neterr");show("home")})},900)
  }).catch(function(){$("hmsg").textContent=T("neterr");show("home")})}
-function finish(r){var perfect=r.score===20;if(ME)ME.points=r.points;
+function finish(r){var perfect=r.score===20;if(ME)ME.points=r.points;syncWidget();
  $("emo").textContent=perfect?"🏆":"❌";$("etitle").textContent=perfect?T("won20"):T("lost");
  $("emsg").textContent=T("result")+" : "+r.score+"/20 · +"+r.earned+" "+T("pts")+" · ⭐ "+r.points;$("again").textContent=T("again");$("again").classList.remove("hide");show("end")}
 $("play").onclick=start;$("again").onclick=function(){show("home");start()};$("egh").onclick=function(){show("home")};
@@ -605,6 +605,8 @@ $("vtest").onclick=function(){
  u.onend=function(){$("vmsg").textContent="Lecture terminée."};
  u.onerror=function(){$("vmsg").textContent="La lecture a échoué sur ce téléphone."};
  speechSynthesis.cancel();speechSynthesis.speak(u);$("vmsg").textContent="Lecture en cours…"};
+/* Envoie les points au widget Android (uniquement quand le site est ouvert dans l'APK). */
+function syncWidget(){try{if(window.IlmAndroid&&ME&&ME.nick){IlmAndroid.setPoints(parseInt(ME.points,10)||0,String(ME.tier||""),String(ME.nick||""))}}catch(e){}}
 function setLang(l){lang=l;try{localStorage.setItem("ilm_lang",l)}catch(e){}
  document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";
  document.querySelectorAll("[data-i]").forEach(function(e){e.textContent=T(e.getAttribute("data-i"))});
