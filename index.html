@@ -58,7 +58,7 @@ input,select{font:inherit;width:100%;padding:14px;border-radius:12px;border:2px 
 .ay{cursor:pointer}.ay.bm{background:rgba(255,184,0,.25);border-radius:8px}
 .num{color:#b8860b;font-size:.7em}.nonum .num{display:none}
 .w.ok{color:#1f9d63}.w.bad{color:#d93f4c;font-weight:700}
-.w.hid{color:transparent;text-shadow:0 0 12px rgba(234,248,238,.7)}
+.w.hid{color:transparent!important;text-shadow:none!important;background:transparent!important}
 .qnav{display:flex;gap:10px;margin-top:12px}.qnav button{margin:0}
 .panel{position:fixed;inset:0;background:var(--bg);z-index:10;overflow:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 24px;max-width:480px;margin:0 auto}
 .hero{text-align:center;margin:2px 0 8px}.hero svg{width:190px;max-width:62%;height:auto}
@@ -145,7 +145,7 @@ html,body{overscroll-behavior-y:contain}
 </div>
 <button class="main" id="rgo" data-i="getcode">Recevoir le code par SMS</button>
 
-<p class="mut center" style="margin-top:14px">Version 11.17.0 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
+<p class="mut center" style="margin-top:14px">Version 11.17.1 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
 </section>
 
 <section id="setup" class="hide">
@@ -318,7 +318,7 @@ $("qnum").onchange=function(){QS.nm=this.checked;qsave();applyQ()};
 $("qtr").onchange=function(){QS.tr=this.value;qsave();loadSurah(QS.s)};
 $("qprev").onclick=function(){loadSurah(QS.s-1)};$("qnext").onclick=function(){loadSurah(QS.s+1)};
 
-var APPV="11.17.0";
+var APPV="11.17.1";
 function verGt(a,b){var x=String(a).split(".").map(Number),y=String(b).split(".").map(Number);for(var i=0;i<3;i++){var u=x[i]||0,v=y[i]||0;if(u>v)return true;if(u<v)return false}return false}
 function checkUpd(){try{fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&verGt(j.v,APPV))$("updbar").classList.remove("hide")}).catch(function(){})}catch(e){}}
 $("updgo").onclick=function(){var done=function(){location.reload()};
@@ -642,11 +642,15 @@ function claimChal(){rpc("claim_challenge",{p_idx:chalIdx()}).then(function(){re
  .catch(function(e){$("hmsg").textContent=(e&&e.message==="not_done")?T("chalNot"):T("neterr")})}
 /* Mode memorisation : ecouter, reciter, tester */
 var MEMO={els:[],norm:[],i:0,r:null};
+
+function allWords(){return [].slice.call(document.querySelectorAll("#qbody .w"))}
+function showAllWords(){allWords().forEach(function(e){e.classList.remove("hid")})}
+function hideAllWords(){allWords().forEach(function(e){e.classList.remove("ok","bad");e.classList.add("hid")})}
 function memoStop(){if(MEMO.r){try{MEMO.r.stop()}catch(e){}}MEMO.r=null;var b=$("mRecite");if(b)b.textContent=T("memoRecite")}
 function memoOpen(){var el=document.querySelector("#qbody .ay.cur")||document.querySelector("#qbody .ay");
  if(!el){note(T("memoNone"));return}
  MEMO.els=[].slice.call(el.querySelectorAll(".w"));MEMO.norm=MEMO.els.map(function(w){return recNorm(w.textContent)});
- MEMO.els.forEach(function(w){w.classList.remove("ok","bad","hid")});
+ showAllWords();MEMO.els.forEach(function(w){w.classList.remove("ok","bad")});
  $("memopanel").classList.remove("hide");$("mstat").textContent=T("memoStart")}
 function memoListen(){if(!MEMO.els.length)return;speak(MEMO.els.map(function(w){return w.textContent}).join(" "),"ar")}
 function memoRecite(){if(MEMO.r){memoStop();return}
@@ -662,12 +666,12 @@ function memoRecite(){if(MEMO.r){memoStop();return}
 function memoHandle(txt){var toks=String(txt||"").split(/\s+/).map(recNorm).filter(Boolean);
  var r=recStep(MEMO.norm,MEMO.i,toks);MEMO.i=r.i;
  MEMO.els.forEach(function(e,k){e.classList.remove("ok","bad");if(k<MEMO.i)e.classList.add("ok");else if(k===r.bad)e.classList.add("bad")});
- if(r.done){memoStop();MEMO.els.forEach(function(e){e.classList.remove("hid")});
+ if(r.done){memoStop();showAllWords();
   $("mstat").textContent=T("memoOk");rpc("log_activity",{p_kind:"memo"}).then(function(){return loadStats()}).catch(function(){});return}
  $("mstat").textContent=r.bad>=0?T("recretry"):T("recgo")}
-function memoTest(){memoStop();MEMO.els.forEach(function(e){e.classList.remove("ok","bad");e.classList.add("hid")});
+function memoTest(){memoStop();hideAllWords();
  $("mstat").textContent=T("memoTestTxt");memoRecite()}
-function memoClose(){memoStop();MEMO.els.forEach(function(e){e.classList.remove("hid")});$("memopanel").classList.add("hide")}
+function memoClose(){memoStop();showAllWords();$("memopanel").classList.add("hide")}
 $("qmemo").onclick=memoOpen;$("mEcoute").onclick=memoListen;$("mRecite").onclick=memoRecite;$("mTest").onclick=memoTest;$("mClose").onclick=memoClose;
 function setLang(l){lang=l;try{localStorage.setItem("ilm_lang",l)}catch(e){}
  document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";
