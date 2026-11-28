@@ -145,7 +145,7 @@ html,body{overscroll-behavior-y:contain}
 </div>
 <button class="main" id="rgo" data-i="getcode">Recevoir le code par SMS</button>
 
-<p class="mut center" style="margin-top:14px">Version 11.18.0 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
+<p class="mut center" style="margin-top:14px">Version 11.19.0 · <a href="privacy.html" style="color:inherit">Politique de confidentialité</a></p>
 </section>
 
 <section id="setup" class="hide">
@@ -320,7 +320,7 @@ $("qnum").onchange=function(){QS.nm=this.checked;qsave();applyQ()};
 $("qtr").onchange=function(){QS.tr=this.value;qsave();loadSurah(QS.s)};
 $("qprev").onclick=function(){loadSurah(QS.s-1)};$("qnext").onclick=function(){loadSurah(QS.s+1)};
 
-var APPV="11.18.0";
+var APPV="11.19.0";
 function verGt(a,b){var x=String(a).split(".").map(Number),y=String(b).split(".").map(Number);for(var i=0;i<3;i++){var u=x[i]||0,v=y[i]||0;if(u>v)return true;if(u<v)return false}return false}
 function checkUpd(){try{fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){if(j&&j.v&&verGt(j.v,APPV))$("updbar").classList.remove("hide")}).catch(function(){})}catch(e){}}
 $("updgo").onclick=function(){var done=function(){location.reload()};
@@ -481,6 +481,8 @@ function voiceFor(code){var c=code.toLowerCase();
  var v2=vs.find(function(x){return x.lang.replace("_","-").toLowerCase()===c})||vs.find(function(x){return x.lang.slice(0,2).toLowerCase()===c.slice(0,2)});
  return v2?{lang:v2.lang,voice:v2}:null}
 
+/* Récitation en ligne (Alafasy) désactivée : pas d'autorisation du récitateur pour une application commerciale. */
+var QURAN_AUDIO=false;
 var AUD=null;
 function audioEl(){if(!AUD){AUD=new Audio();AUD.preload="auto"}return AUD}
 function ayahUrl(g){return "https://cdn.islamic.network/quran/audio/128/ar.alafasy/"+g+".mp3"}
@@ -501,7 +503,56 @@ function playNext(){
 function playVerses(items){if(!items.length)return;PLAY.list=items;PLAY.i=0;PLAY.on=true;
  var b=$("qread");if(b)b.textContent=T("stopT");playNext()}
 function verseItems(){return [].slice.call(document.querySelectorAll("#qbody .ay")).filter(function(el){return el.dataset.g}).map(function(el){return {g:el.dataset.g,el:el}})}
-function readSurah(){if(PLAY.on){stopPlay();return}
+function speak(text,l){if(!("speechSynthesis" in window)||!text)return;
+ var r=voiceFor(SPK_LANG[l]||"fr-FR");if(!r){note(T("nospk"));return}
+ var u=new SpeechSynthesisUtterance(String(text));u.lang=r.lang;if(r.voice){try{u.voice=r.voice}catch(e){}}
+ try{speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){note(T("nospk"))}}
+$("qspk").onclick=function(){var parts=[$("q").textContent];[].forEach.call(document.querySelectorAll("#opts .opt"),function(x){parts.push(x.getAttribute("data-a"))});speak(parts.join(". "),lang)};
+function tErr(e){var m=(e&&e.message)||"";if(m==="tier_required")return T("tournLocked");if(m==="tournament_closed")return T("tournClosed");if(m==="finished"||m==="already_joined")return T("tournDone");if(m==="not_enough_points")return T("nopts");return T("neterr")}
+var MB_ROOM=null;
+function mbErr(e){var m=(e&&e.message)||"";var M={tier_required:T("tournLocked"),already_in_room:T("mbAlready"),room_not_found:T("mbRoomNotFound"),room_closed:T("mbClosed"),already_joined:T("mbJoined"),room_full:T("mbFull"),bad_size:T("neterr")};return M[m]||T("neterr")}
+var DEF=null;
+function defErr(e){var m=(e&&e.message)||"";var M={tier_required:T("tournLocked"),already_in_defi:T("defiAlready"),not_enough_points:T("defiNoPoints"),defi_not_found:T("defiNotFound"),defi_closed:T("defiClosed"),already_joined:T("mbJoined"),defi_full:T("defiFull"),not_enough_players:T("defiMin"),only_creator:T("defiOnlyCreator"),bad_stake:T("defiBadStake")};return M[m]||T("neterr")}
+function renderDefi(st){var box=$("mbstat");box.innerHTML="";var d=st&&st.defi;DEF=st;
+ $("dcreate").classList.toggle("hide",!!d);$("djoinwrap").classList.toggle("hide",!!d);
+ $("dstart").classList.add("hide");$("dinvite").classList.add("hide");$("mbgo").classList.add("hide");
+ if(!d){rows($("tlb"),[]);return}
+ rows(box,[[T("defiCode"),d.code],[T("defiStake2"),d.stake+" pts"],[T("defiPot"),d.pot+" pts"],[T("mbStatus"),d.status]]);
+ if(d.status==="waiting"){$("dinvite").classList.remove("hide");
+  if(d.creator_me&&(st.players||[]).length>=2)$("dstart").classList.remove("hide");
+  var m=document.createElement("p");m.className="mut";m.textContent=T("defiWait");box.appendChild(m)}
+ if(d.status==="playing"&&!st.my_finished)$("mbgo").classList.remove("hide");
+ rows($("tlb"),(st.players||[]).map(function(x,i){return [(i+1)+". "+(x.avatar||"👤")+" "+x.nick,"⭐ "+x.score+(x.finished?"":" …")]}))}
+function loadDefi(){return rpc("defi_status").then(function(st){renderDefi(st);return st}).catch(function(e){$("tmsg").textContent=defErr(e)})}
+function renderTourn(){if(!ME)return;$("tmsg").textContent="";
+ var locked=!(ME.tier==="mid"||ME.tier==="prem"||ME.tier==="sup");
+ if(locked){$("mbstat").innerHTML="";var d=document.createElement("p");d.textContent=T("tournLocked");$("mbstat").appendChild(d);
+  ["dcreate","djoinwrap","dstart","dinvite","mbgo"].forEach(function(id){$(id).classList.add("hide")});rows($("tlb"),[]);return}
+ loadDefi()}
+function tFinish(r){TMODE=false;$("emo").textContent="🏅";$("etitle").textContent=T("tournDone");
+ $("emsg").textContent=T("tournScore")+" : "+r.score+"/20";$("again").classList.add("hide");show("end")}
+$("dmake").onclick=function(){var v=parseInt($("dstake").value,10);$("tmsg").textContent="";
+ rpc("defi_create",{p_stake:v}).then(loadDefi).catch(function(e){$("tmsg").textContent=defErr(e)})};
+$("djoin").onclick=function(){var c=($("dcode").value||"").trim().toUpperCase();if(!c)return;$("tmsg").textContent="";
+ rpc("defi_join",{p_code:c}).then(loadDefi).catch(function(e){$("tmsg").textContent=defErr(e)})};
+$("dstart").onclick=function(){if(!DEF||!DEF.defi)return;$("tmsg").textContent="";
+ rpc("defi_start",{p_defi:DEF.defi.id}).then(loadDefi).catch(function(e){$("tmsg").textContent=defErr(e)})};
+$("dinvite").onclick=function(){if(!DEF||!DEF.defi)return;var t="Rejoins mon défi Ilm Quiz ! Code : "+DEF.defi.code;
+ if(navigator.share){navigator.share({text:t+" "+location.href}).catch(function(){})}
+ else{try{navigator.clipboard.writeText(t)}catch(e){}$("tmsg").textContent=T("copied")}};
+function mbPlay(){TMODE=true;$("tmsg").textContent="";
+ rpc("defi_status").then(function(st){if(!st.defi||st.defi.status!=="playing"||st.my_finished)throw new Error("not_ready");show("game");return nextQ()})
+  .catch(function(e){TMODE=false;$("tmsg").textContent=(e&&e.message==="not_ready")?T("defiMin"):defErr(e);show("tourn")})}
+$("mbgo").onclick=mbPlay;
+$("tback").onclick=function(){show("home")};
+$("gtourn").onclick=function(){show("tourn")};
+
+var READING=false;
+$("mbgo").onclick=mbPlay;
+$("tback").onclick=function(){show("home")};
+$("gtourn").onclick=function(){show("tourn")};
+function readSurah(){if(!QURAN_AUDIO){var t=[].slice.call(document.querySelectorAll("#qbody .ay")).map(function(el){return el.textContent}).join(" ");speak(t,"ar");return}
+ if(PLAY.on){stopPlay();return}
  var items=verseItems();if(!items.length){note(T("audioErr"));return}
  playVerses(items)}
 
@@ -580,13 +631,15 @@ $("vtest").onclick=function(){
  u.onerror=function(){$("vmsg").textContent="La lecture a échoué sur ce téléphone."};
  speechSynthesis.cancel();speechSynthesis.speak(u);$("vmsg").textContent="Lecture en cours…"};
 /* Envoie les points au widget Android (uniquement quand le site est ouvert dans l'APK). */
-function syncWidget(){try{if(window.IlmAndroid&&ME&&ME.nick){IlmAndroid.setPoints(parseInt(ME.points,10)||0,String(ME.tier||""),String(ME.nick||""))}}catch(e){}}
+var WLVL=null,WSTREAK=0;
+function syncWidget(){try{if(window.IlmAndroid&&ME&&ME.nick){IlmAndroid.setPoints(parseInt(ME.points,10)||0,String(ME.tier||""),String(ME.nick||""));
+ if(IlmAndroid.setDetails&&WLVL){IlmAndroid.setDetails(parseInt(WLVL.level,10)||1,parseInt(WLVL.xp,10)||0,parseInt(WLVL.next_xp,10)||100,parseInt(WSTREAK,10)||0)}}}catch(e){}}
 
 var STATS=null;
 var CHAL=[{fr:"Réussir 5 bonnes réponses dans une partie",en:"Get 5 correct answers in one game",ar:"الإجابة الصحيحة عن 5 أسئلة في لعبة",ha:"Samun amsoshi 5 daidai a wasa ɗaya"},{fr:"Lire le Coran aujourd’hui (🎙️)",en:"Read the Quran today (🎙️)",ar:"اقرأ القرآن اليوم (🎙️)",ha:"Karanta Alƙur’ani yau (🎙️)"},{fr:"Mémoriser un verset aujourd’hui (🧠)",en:"Memorize a verse today (🧠)",ar:"احفظ آية اليوم (🧠)",ha:"Haddace ayar yau (🧠)"}];
 function chalIdx(){return Math.floor(Date.now()/86400000)%3}
 function chalText(){var c=CHAL[chalIdx()];return c[lang]||c.fr}
-function loadStats(){return rpc("my_stats").then(function(st){STATS=st;renderStats();return st}).catch(function(){})}
+function loadStats(){return rpc("my_stats").then(function(st){STATS=st;WSTREAK=st.streak||0;syncWidget();renderStats();return st}).catch(function(){})}
 function renderStats(){if(!STATS)return;
  var h=$("hchal");
  if(h&&ME){h.innerHTML="";
@@ -615,7 +668,7 @@ function memoOpen(){var el=document.querySelector("#qbody .ay.cur")||document.qu
  MEMO.els=[].slice.call(el.querySelectorAll(".w"));MEMO.norm=MEMO.els.map(function(w){return recNorm(w.textContent)});
  showAllWords();MEMO.els.forEach(function(w){w.classList.remove("ok","bad")});
  $("memopanel").classList.remove("hide");$("mstat").textContent=T("memoStart")}
-function memoListen(){if(!MEMO.els.length)return;var el=MEMO.els[0]&&MEMO.els[0].closest?MEMO.els[0].closest(".ay"):null;var g=el&&el.dataset.g;if(!g){speak(MEMO.els.map(function(w){return w.textContent}).join(" "),"ar");return}stopPlay();playVerses([{g:g,el:el}])}
+function memoListen(){if(!MEMO.els.length)return;if(!QURAN_AUDIO){speak(MEMO.els.map(function(w){return w.textContent}).join(" "),"ar");return}var el=MEMO.els[0]&&MEMO.els[0].closest?MEMO.els[0].closest(".ay"):null;var g=el&&el.dataset.g;if(!g){speak(MEMO.els.map(function(w){return w.textContent}).join(" "),"ar");return}stopPlay();playVerses([{g:g,el:el}])}
 function memoRecite(){if(MEMO.r){memoStop();return}
  if(!MEMO.els.length)return;
  if(!SRC){$("mstat").textContent=T("recnosup");return}
@@ -647,7 +700,7 @@ function renderLevel(st){var box=$("lvlbox");if(!box||!st)return;box.innerHTML="
  var got=st.gifts||[];
  for(var L=2;L<=Math.max(st.level,4);L++){var d=document.createElement("div");d.className="tx";d.innerHTML="<span></span><span></span>";
   d.children[0].textContent=T("lvlGift")+" "+L+" (+"+(10*L)+" pts)";d.children[1].textContent=got.indexOf(L)>-1?"✓":"🔒";box.appendChild(d)}}
-function loadLevel(){return rpc("level_status").then(function(st){if(st.gift_now>0){$("notifbtn").textContent=T("lvlNew")+" +"+st.gift_now;refreshMe().then(function(){renderProf();renderHome()})}renderLevel(st)}).catch(function(){})}
+function loadLevel(){return rpc("level_status").then(function(st){WLVL=st;syncWidget();if(st.gift_now>0){$("notifbtn").textContent=T("lvlNew")+" +"+st.gift_now;refreshMe().then(function(){renderProf();renderHome()})}renderLevel(st)}).catch(function(){})}
 function setLang(l){lang=l;try{localStorage.setItem("ilm_lang",l)}catch(e){}
  document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";
  document.querySelectorAll("[data-i]").forEach(function(e){e.textContent=T(e.getAttribute("data-i"))});
