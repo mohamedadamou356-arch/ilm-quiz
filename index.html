@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet">
 <link rel="icon" href="icon-192.png">
 <style>
-:root{color-scheme:dark;--bg:#06130c;--card:#0c2a19;--ink:#eaf8ee;--mut:#93b89f;--line:#1f4d31;--acc:#84e53a;--accink:#06130c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{color-scheme:dark;--ok:#2fbf5a;--bad:#e5484d;--bg:#06130c;--card:#0c2a19;--ink:#eaf8ee;--mut:#93b89f;--line:#1f4d31;--acc:#84e53a;--accink:#06130c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#06130c;--card:#0c2a19;--ink:#eaf8ee;--mut:#93b89f;--line:#1f4d31}}
 :root[data-theme="dark"]{--bg:#06130c;--card:#0c2a19;--ink:#eaf8ee;--mut:#93b89f;--line:#1f4d31}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -36,8 +36,8 @@ button:disabled{opacity:.45}
 .timer{height:6px;background:var(--line);border-radius:9px;overflow:hidden;margin-bottom:18px}
 .timer i{display:block;height:100%;background:var(--ink);width:100%}
 .q{font-size:1.35rem;font-weight:700;line-height:1.3;margin:0 0 18px;min-height:5.2rem}
-.opt{background:var(--card);color:var(--ink);border:2px solid var(--line);text-align:left;margin-bottom:10px}
-.opt.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt{background:linear-gradient(135deg,#1f7a44,#0f4f2b);color:#fff;border:2px solid #84e53a;text-align:left;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.opt.ok{background:#84e53a;border-color:#84e53a;color:#06130c}
 .opt.bad{background:var(--bad);border-color:var(--bad);color:#fff}
 .big{font-size:3.4rem;margin:20px 0 0;text-align:center}
 .center{text-align:center}
